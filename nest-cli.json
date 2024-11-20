@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "apps/scheduler/src",
+  "compilerOptions": {
+    "deleteOutDir": true,
+    "webpack": true,
+    "tsConfigPath": "apps/scheduler/tsconfig.app.json"
+  },
+  "monorepo": true,
+  "root": "apps/scheduler",
+  "projects": {
+    "scheduler": {
+      "type": "application",
+      "root": "apps/scheduler",
+      "entryFile": "main",
+      "sourceRoot": "apps/scheduler/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/scheduler/tsconfig.app.json"
+      }
+    },
+    "notification": {
+      "type": "application",
+      "root": "apps/notification",
+      "entryFile": "main",
+      "sourceRoot": "apps/notification/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/notification/tsconfig.app.json"
+      }
+    }
+  }
+}
