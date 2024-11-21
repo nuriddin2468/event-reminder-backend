@@ -31,7 +31,7 @@ export class EventResolver {
   createEvent(
     @Args('createEventInput') createEventInput: CreateEventInput,
     @CurrentUser() user: CurrentUserType,
-  ) {
+  ): Promise<Event> {
     return this.eventService.create(user, createEventInput);
   }
 
@@ -39,7 +39,7 @@ export class EventResolver {
   findAll(
     @Args('findAllEventsInput') findAllEventsInput: FindAllEventsInput,
     @CurrentUser() user: CurrentUserType,
-  ) {
+  ): Promise<Event[]> {
     return this.eventService.findAll(user, findAllEventsInput);
   }
 
@@ -47,7 +47,7 @@ export class EventResolver {
   findOne(
     @Args('id', { type: () => Int }) id: number,
     @CurrentUser() user: CurrentUserType,
-  ) {
+  ): Promise<Event> {
     return this.eventService.findOne(user, id);
   }
 
@@ -55,7 +55,7 @@ export class EventResolver {
   updateEvent(
     @Args('updateEventInput') updateEventInput: UpdateEventInput,
     @CurrentUser() user: CurrentUserType,
-  ) {
+  ): Promise<Event> {
     return this.eventService.update(user, updateEventInput);
   }
 
@@ -63,19 +63,22 @@ export class EventResolver {
   removeEvent(
     @Args('id', { type: () => Int }) id: number,
     @CurrentUser() user: CurrentUserType,
-  ) {
+  ): Promise<Event> {
     return this.eventService.remove(user, id);
   }
 
   @ResolveField(() => User)
-  user(@Parent() event: Event) {
+  user(@Parent() event: Event): Promise<User> {
     return this.userService.findOne(event.userId);
   }
 
   @ResolveField(() => Location)
-  location(@Parent() event: Event, @CurrentUser() user: CurrentUserType) {
+  location(
+    @Parent() event: Event,
+    @CurrentUser() user: CurrentUserType,
+  ): Promise<Location> | null {
     return event.locationId
-      ? this.locationService.findOne(event.locationId)
+      ? this.locationService.findOne(user, event.locationId)
       : null;
   }
 }
