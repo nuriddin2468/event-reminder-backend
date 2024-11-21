@@ -9,7 +9,7 @@ import { EventModule } from '../event/event.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Location]),
-    UserModule,
+    forwardRef(() => UserModule),
     forwardRef(() => EventModule),
   ],
   providers: [LocationResolver, LocationService],
