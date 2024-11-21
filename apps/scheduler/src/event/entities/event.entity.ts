@@ -1,7 +1,27 @@
-import { ObjectType, Field, Int } from '@nestjs/graphql';
+import { Field, GraphQLISODateTime, Int, ObjectType } from '@nestjs/graphql';
+import { User } from '../../user/entities/user.entity';
+import { Location } from '../../location/entities/location.entity';
 
 @ObjectType()
 export class Event {
-  @Field(() => Int, { description: 'Example field (placeholder)' })
-  exampleField: number;
+  @Field(() => Int)
+  id: number;
+
+  @Field()
+  title: string;
+
+  @Field({ nullable: true })
+  description?: string;
+
+  @Field(() => GraphQLISODateTime)
+  startDate: string;
+
+  @Field(() => GraphQLISODateTime)
+  endDate: string;
+
+  @Field(() => User)
+  user: User;
+
+  @Field(() => Location, { nullable: true })
+  location?: Location;
 }
