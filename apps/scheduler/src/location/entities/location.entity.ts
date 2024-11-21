@@ -28,5 +28,8 @@ export class Location {
   @ManyToOne(() => User, (user) => user.locations)
   user: User;
 
+  @Field(() => Int)
+  userId: number;
+
   // it is possible to add coordinates here in future (to connect with maps)
 }
