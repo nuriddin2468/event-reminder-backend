@@ -1,7 +1,19 @@
-import { InputType, Int, Field } from '@nestjs/graphql';
+import { Field, GraphQLISODateTime, InputType, Int } from '@nestjs/graphql';
 
 @InputType()
 export class CreateEventInput {
-  @Field(() => Int, { description: 'Example field (placeholder)' })
-  exampleField: number;
+  @Field()
+  title: string;
+
+  @Field({ nullable: true })
+  description?: string;
+
+  @Field(() => GraphQLISODateTime)
+  startDate: string;
+
+  @Field(() => GraphQLISODateTime)
+  endDate: string;
+
+  @Field(() => Int, { nullable: true })
+  locationId?: number;
 }

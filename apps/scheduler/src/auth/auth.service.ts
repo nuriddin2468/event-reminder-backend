@@ -21,7 +21,7 @@ export class AuthService {
 
   async signIn({ username, password }: SignInInput) {
     const user = await this.userRepository.findOne({ where: { username } });
-    if (!user || !(await argon.verify(user.password, password))) {
+    if (!user || !(await argon.verify(user.password as string, password))) {
       throw new UnauthorizedException();
     }
 

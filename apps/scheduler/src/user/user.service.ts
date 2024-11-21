@@ -19,7 +19,7 @@ export class UserService {
     return `This action returns all user`;
   }
 
-  findOne(id: number) {
+  findOne(id: number): Promise<User> {
     return this.userRepository.findOneOrFail({ where: { id: id } });
   }
 
