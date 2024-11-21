@@ -1,26 +1,54 @@
-import { Injectable } from '@nestjs/common';
-import { CreateAuthInput } from './dto/create-auth.input';
-import { UpdateAuthInput } from './dto/update-auth.input';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { SignInInput } from './dto/sign-in.input';
+import { SignUpInput } from './dto/sign-up.input';
+import { Repository } from 'typeorm';
+import { User } from '../user/entities/user.entity';
+import { JwtService } from '@nestjs/jwt';
+import { InjectRepository } from '@nestjs/typeorm';
+import * as argon from 'argon2';
 
 @Injectable()
 export class AuthService {
-  create(createAuthInput: CreateAuthInput) {
-    return 'This action adds a new auth';
+  constructor(
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+    private jwtService: JwtService,
+  ) {}
+
+  async signIn({ username, password }: SignInInput) {
+    const user = await this.userRepository.findOne({ where: { username } });
+    if (!user || !(await argon.verify(user.password, password))) {
+      throw new UnauthorizedException();
+    }
+
+    return {
+      token: await this.generateToken(user.id, user.username),
+      userId: user.id,
+    };
   }
 
-  findAll() {
-    return `This action returns all auth`;
+  async signUp({ username, password }: SignUpInput) {
+    if (await this.userRepository.exists({ where: { username } })) {
+      throw new BadRequestException();
+    }
+    const user = await this.userRepository.save({
+      username,
+      password: await argon.hash(password),
+    });
+    return {
+      token: await this.generateToken(user.id, user.username),
+      userId: user.id,
+    };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
-  }
-
-  update(id: number, updateAuthInput: UpdateAuthInput) {
-    return `This action updates a #${id} auth`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+  private generateToken(id: number, username: string) {
+    return this.jwtService.signAsync({
+      id,
+      username,
+    });
   }
 }
