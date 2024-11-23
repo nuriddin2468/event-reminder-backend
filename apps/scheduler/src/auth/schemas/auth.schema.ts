@@ -1,10 +1,10 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
-import { User } from '../../user/entities/user.entity';
+import { UserSchema } from '../../user/schemas/user.schema';
 
 @ObjectType()
-export class Auth {
-  @Field(() => User)
-  user: User;
+export class AuthSchema {
+  @Field(() => UserSchema)
+  user: UserSchema;
 
   @Field()
   token: string;

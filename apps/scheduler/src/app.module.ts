@@ -10,20 +10,27 @@ import { EventModule } from './event/event.module';
 import { UserModule } from './user/user.module';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
+import { createDataLoaders } from './data-loaders';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    GraphQLModule.forRoot<ApolloDriverConfig>({
+    GraphQLModule.forRootAsync<ApolloDriverConfig>({
       driver: ApolloDriver,
-      autoSchemaFile: true,
-      playground: false,
-      plugins: [ApolloServerPluginLandingPageLocalDefault()],
+      inject: [DataSource],
+      useFactory: (dataSource: DataSource) => ({
+        autoSchemaFile: true,
+        playground: false,
+        plugins: [ApolloServerPluginLandingPageLocalDefault()],
+        context: () => ({
+          loaders: createDataLoaders(dataSource),
+        }),
+      }),
     }),
     TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         type: 'postgres',
@@ -34,6 +41,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         database: config.get('POSTGRES_DB'),
         synchronize: true,
         autoLoadEntities: true,
+        logging: ['query'],
       }),
     }),
     AuthModule,

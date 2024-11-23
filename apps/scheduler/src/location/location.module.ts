@@ -1,18 +1,13 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { LocationService } from './location.service';
 import { LocationResolver } from './location.resolver';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Location } from './entities/location.entity';
-import { UserModule } from '../user/user.module';
-import { EventModule } from '../event/event.module';
+import { LocationRepository } from './repositories/location.repository';
+import { LocationEntity } from './entities/location.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Location]),
-    forwardRef(() => UserModule),
-    forwardRef(() => EventModule),
-  ],
-  providers: [LocationResolver, LocationService],
+  imports: [TypeOrmModule.forFeature([LocationEntity])],
+  providers: [LocationResolver, LocationService, LocationRepository],
   exports: [TypeOrmModule, LocationService],
 })
 export class LocationModule {}

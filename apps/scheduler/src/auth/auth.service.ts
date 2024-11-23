@@ -5,23 +5,20 @@ import {
 } from '@nestjs/common';
 import { SignInInput } from './dto/sign-in.input';
 import { SignUpInput } from './dto/sign-up.input';
-import { Repository } from 'typeorm';
-import { User } from '../user/entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
-import { InjectRepository } from '@nestjs/typeorm';
 import * as argon from 'argon2';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
+    private readonly userService: UserService,
     private jwtService: JwtService,
   ) {}
 
   async signIn({ username, password }: SignInInput) {
-    const user = await this.userRepository.findOne({ where: { username } });
-    if (!user || !(await argon.verify(user.password as string, password))) {
+    const user = await this.userService.findUserByUsername(username);
+    if (await argon.verify(user.password as string, password)) {
       throw new UnauthorizedException();
     }
 
@@ -32,13 +29,10 @@ export class AuthService {
   }
 
   async signUp({ username, password }: SignUpInput) {
-    if (await this.userRepository.exists({ where: { username } })) {
+    if (await this.userService.existUserWithUsername(username)) {
       throw new BadRequestException();
     }
-    const user = await this.userRepository.save({
-      username,
-      password: await argon.hash(password),
-    });
+    const user = await this.userService.createUser(username, password);
     return {
       token: await this.generateToken(user.id, user.username),
       userId: user.id,

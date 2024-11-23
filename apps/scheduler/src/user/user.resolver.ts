@@ -7,32 +7,33 @@ import {
   Resolver,
 } from '@nestjs/graphql';
 import { UserService } from './user.service';
-import { User } from './entities/user.entity';
-import { Location } from '../location/entities/location.entity';
-import { Event } from '../event/entities/event.entity';
-import { LocationService } from '../location/location.service';
-import { EventService } from '../event/event.service';
+import { EventSchema } from '../event/schemas/event.schema';
+import { LocationSchema } from '../location/schemas/location.schema';
+import { UserSchema } from './schemas/user.schema';
+import { UserEntity } from './entities/user.entity';
+import { DataLoaders } from '../common/decorators/data-loader';
+import { DataLoadersType } from '../data-loaders';
 
-@Resolver(() => User)
+@Resolver(() => UserSchema)
 export class UserResolver {
-  constructor(
-    private readonly userService: UserService,
-    private readonly locationService: LocationService,
-    private readonly eventService: EventService,
-  ) {}
+  constructor(private readonly userService: UserService) {}
 
-  @Query(() => User, { name: 'user' })
-  findOne(@Args('id', { type: () => Int }) id: number): Promise<User> {
+  @Query(() => UserSchema, { name: 'user' })
+  findOne(@Args('id', { type: () => Int }) id: number): Promise<UserSchema> {
     return this.userService.findOne(id);
   }
 
-  @ResolveField(() => [Event])
-  events(@Parent() user: User): Promise<Event[]> {
-    return this.eventService.findAll(user, {});
+  @ResolveField(() => [EventSchema])
+  events(@Parent() parent: UserEntity, @DataLoaders() loader: DataLoadersType) {
+    return loader.eventsLoaderByUserId.load(parent.id);
   }
 
-  @ResolveField(() => [Location])
-  locations(@Parent() user: User): Promise<Location[]> {
-    return this.locationService.findAll(user);
+  @ResolveField(() => [LocationSchema])
+  locations(
+    @Parent() parent: UserEntity,
+    @DataLoaders() loader: DataLoadersType,
+  ) {
+    // no sens to add dataloader, we can fetch only one user
+    return loader.locationsLoaderUserId.load(parent.id);
   }
 }

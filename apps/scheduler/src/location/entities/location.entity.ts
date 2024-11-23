@@ -1,34 +1,32 @@
-import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { ObjectType } from '@nestjs/graphql';
 import {
   Column,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Event } from '../../event/entities/event.entity';
-import { User } from '../../user/entities/user.entity';
+import { EventEntity } from '../../event/entities/event.entity';
+import { UserEntity } from '../../user/entities/user.entity';
 
 @Entity({ name: 'locations' })
 @ObjectType()
-export class Location {
+export class LocationEntity {
   @PrimaryGeneratedColumn()
-  @Field(() => Int)
   id: number;
 
   @Column()
-  @Field()
   title: string;
 
-  @Field(() => [Event])
-  @OneToMany(() => Event, (event) => event.location)
-  events: Event[];
+  @OneToMany(() => EventEntity, (event) => event.location)
+  events: EventEntity[];
 
-  @Field(() => User)
-  @ManyToOne(() => User, (user) => user.locations)
-  user: User;
+  @ManyToOne(() => UserEntity, (user) => user.locations)
+  @JoinColumn({ name: 'userId' })
+  user: UserEntity;
 
-  @Field(() => Int)
+  @Column()
   userId: number;
 
   // it is possible to add coordinates here in future (to connect with maps)
