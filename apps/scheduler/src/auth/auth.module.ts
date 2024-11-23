@@ -28,5 +28,6 @@ import { UserModule } from '../user/user.module';
       useClass: AuthGuard,
     },
   ],
+  exports: [AuthService],
 })
 export class AuthModule {}

@@ -57,7 +57,7 @@ export class EventService {
     await this.notificationQueue.add(
       QueueNamings.notification.jobsKeys.reminder,
       event,
-      { delay: 1000 },
+      { delay: new Date(event.startDate).getTime() - new Date().getTime() },
     );
   }
 }

@@ -8,6 +8,7 @@ import { SignUpInput } from './dto/sign-up.input';
 import { JwtService } from '@nestjs/jwt';
 import * as argon from 'argon2';
 import { UserService } from '../user/user.service';
+import { CurrentUserType } from './types/current-user';
 
 @Injectable()
 export class AuthService {
@@ -37,6 +38,22 @@ export class AuthService {
       token: await this.generateToken(user.id, user.username),
       userId: user.id,
     };
+  }
+
+  async verifyToken(authHeader?: string): Promise<CurrentUserType> {
+    if (!authHeader) throw new UnauthorizedException();
+    const token = this.extractTokenFromHeader(authHeader);
+    if (!token) throw new UnauthorizedException();
+    try {
+      return (await this.jwtService.verifyAsync(token)) as CurrentUserType;
+    } catch {
+      throw new UnauthorizedException();
+    }
+  }
+
+  private extractTokenFromHeader(authHeader: string): string | undefined {
+    const [type, token] = authHeader?.split(' ') ?? [];
+    return type === 'Bearer' ? token : undefined;
   }
 
   private generateToken(id: number, username: string) {

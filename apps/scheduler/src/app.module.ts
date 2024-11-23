@@ -13,6 +13,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { createDataLoaders } from './data-loaders';
 import { BullModule } from '@nestjs/bullmq';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { BullModule } from '@nestjs/bullmq';
     EventModule,
     LocationModule,
     UserModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

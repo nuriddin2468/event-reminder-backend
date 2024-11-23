@@ -1,20 +1,14 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { CurrentUserType } from '../types/current-user';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from '../decorators/is-public';
 import { GqlExecutionContext } from '@nestjs/graphql';
+import { AuthService } from '../auth.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
-    private jwtService: JwtService,
     private reflector: Reflector,
+    private authService: AuthService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -22,18 +16,9 @@ export class AuthGuard implements CanActivate {
       return true;
     }
     const ctx = GqlExecutionContext.create(context).getContext();
-
-    const token = this.extractTokenFromHeader(ctx.req.headers);
-    if (!token) {
-      throw new UnauthorizedException();
-    }
-    try {
-      ctx.req.user = (await this.jwtService.verifyAsync(
-        token,
-      )) as CurrentUserType;
-    } catch {
-      throw new UnauthorizedException();
-    }
+    ctx.req.user = await this.authService.verifyToken(
+      ctx.req.headers['authorization'],
+    );
     return true;
   }
 
@@ -42,12 +27,5 @@ export class AuthGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
-  }
-
-  private extractTokenFromHeader(
-    headers: Request['headers'],
-  ): string | undefined {
-    const [type, token] = headers['authorization']?.split(' ') ?? [];
-    return type === 'Bearer' ? token : undefined;
   }
 }

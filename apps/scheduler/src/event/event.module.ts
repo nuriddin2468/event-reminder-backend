@@ -7,6 +7,7 @@ import { EventRepository } from './repositories/event.repository';
 import { BullModule } from '@nestjs/bullmq';
 import { QueueNamings } from '../common/enums/queue-namings';
 import { EventConsumer } from './event.consumer';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { EventConsumer } from './event.consumer';
         port: 6379,
       },
     }),
+    NotificationModule,
   ],
   providers: [EventResolver, EventService, EventRepository, EventConsumer],
   exports: [TypeOrmModule, EventService],
