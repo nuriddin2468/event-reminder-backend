@@ -7,7 +7,9 @@ services:
     container_name: nestjs-app
     ports:
       - "3000:3000"
+      - "80:80"
     environment:
+      NODE_ENV: development
       DATABASE_URL: ${DATABASE_URL}
       REDIS_URL: ${REDIS_URL}
     command: npm run start:prod
@@ -25,6 +27,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+      PGUSER: "postgres"
     ports:
       - "5432:5432"
     volumes:
@@ -43,11 +46,19 @@ services:
     restart: always
     ports:
       - "6379:6379"
+    volumes:
+      - redis-data:/data
     networks:
       - app-network
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres-data:
+  redis-data:
 
 networks:
   app-network:
