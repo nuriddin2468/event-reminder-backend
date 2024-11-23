@@ -5,15 +5,27 @@ import { FindAllEventsInput } from './dto/find-all-events.input';
 import { CurrentUserType } from '../auth/types/current-user';
 import { EventRepository } from './repositories/event.repository';
 import { EventEntity } from './entities/event.entity';
+import { InjectQueue } from '@nestjs/bullmq';
+import { QueueNamings } from '../common/enums/queue-namings';
+import { Queue } from 'bullmq';
 
 @Injectable()
 export class EventService {
-  constructor(private readonly repository: EventRepository) {}
-  create(
+  constructor(
+    private readonly repository: EventRepository,
+    @InjectQueue(QueueNamings.notification.name)
+    private notificationQueue: Queue,
+  ) {}
+  async create(
     user: CurrentUserType,
     createEventInput: CreateEventInput,
   ): Promise<EventEntity> {
-    return this.repository.createUserEvent(user.id, createEventInput);
+    const event = await this.repository.createUserEvent(
+      user.id,
+      createEventInput,
+    );
+    await this.addReminder(event);
+    return event;
   }
 
   findAll(
@@ -39,5 +51,13 @@ export class EventService {
 
   async remove(user: CurrentUserType, eventId: number): Promise<EventEntity> {
     return this.repository.deleteUserEventById(user.id, eventId);
+  }
+
+  private async addReminder(event: EventEntity) {
+    await this.notificationQueue.add(
+      QueueNamings.notification.jobsKeys.reminder,
+      event,
+      { delay: 1000 },
+    );
   }
 }

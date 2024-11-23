@@ -12,6 +12,7 @@ import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { createDataLoaders } from './data-loaders';
+import { BullModule } from '@nestjs/bullmq';
 
 @Module({
   imports: [
@@ -43,6 +44,12 @@ import { createDataLoaders } from './data-loaders';
         autoLoadEntities: true,
         logging: ['query'],
       }),
+    }),
+    BullModule.forRoot({
+      connection: {
+        host: 'redis-cache',
+        port: 6379,
+      },
     }),
     AuthModule,
     EventModule,
